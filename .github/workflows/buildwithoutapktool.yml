@@ -31,7 +31,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y zipalign apksigner aapt
-          wget https://github.com/baksmali/smali/releases/download/v3.0.9/smali-3.0.9.jar -O smali.jar
+          wget https://github.com/google/smali/releases/download/v3.0.7/smali-3.0.7.jar -O smali.jar
 
       - name: Build classes.dex from smali
         run: |
