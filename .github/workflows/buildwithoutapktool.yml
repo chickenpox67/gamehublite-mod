@@ -18,11 +18,10 @@ jobs:
           distribution: temurin
 
       - name: Install Android build tools + smali
-        run: |
-          sudo apt update
-          sudo apt install -y zipalign apksigner aapt
-          # install smali / baksmali
-          wget https://github.com/JesusFreke/smali/releases/download/2.5.2/smali-2.5.2.jar -O smali.jar
+  run: |
+    sudo apt update
+    sudo apt install -y zipalign apksigner aapt
+    wget https://github.com/JesusFreke/smali/releases/latest/download/smali.jar -O smali.jar
 
       - name: Build classes.dex from smali
         run: |
