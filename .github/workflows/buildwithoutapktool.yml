@@ -27,7 +27,7 @@ jobs:
           echo "ANDROID_HOME=/opt/android-sdk" >> $GITHUB_ENV
           echo "$ANDROID_HOME/cmdline-tools/bin:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_PATH
 
-      - name: Install smali + tools
+      - name: Install smali
         run: |
           sudo apt update
           sudo apt install -y zipalign apksigner aapt
