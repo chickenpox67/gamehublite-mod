@@ -1,0 +1,53 @@
+name: Build LiteResources APK (manual build)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java & Android SDK tools
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Install Android build tools + smali
+        run: |
+          sudo apt update
+          sudo apt install -y zipalign apksigner aapt
+          # install smali / baksmali
+          wget https://github.com/JesusFreke/smali/releases/download/2.5.2/smali-2.5.2.jar -O smali.jar
+
+      - name: Build classes.dex from smali
+        run: |
+          # combine all smali dirs into one temp dir
+          mkdir all_smali
+          find lite_resources/smali_classes* -type d -exec cp -r {}/* all_smali/ \;
+          java -jar smali.jar assemble all_smali -o classes.dex
+
+      - name: Package resources + manifest + dex into unsigned APK
+        run: |
+          # create unsigned apk
+          aapt package -f -M lite_resources/AndroidManifest.xml \
+            -S lite_resources/res \
+            -I $ANDROID_HOME/platforms/android-33/android.jar \
+            -F unsigned.apk
+          # add classes.dex
+          zip -j unsigned.apk classes.dex
+
+      - name: Zipalign + sign
+        run: |
+          zipalign -p 4 unsigned.apk aligned.apk
+          apksigner sign --ks-key-alias key --ks-pass pass:123456 --key-pass pass:123456 --ks mykey.keystore aligned.apk || echo "unsigned build done"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-apk
+          path: aligned.apk
