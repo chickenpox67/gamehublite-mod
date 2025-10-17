@@ -27,11 +27,12 @@ jobs:
           echo "ANDROID_HOME=/opt/android-sdk" >> $GITHUB_ENV
           echo "$ANDROID_HOME/cmdline-tools/bin:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_PATH
 
-      - name: Install smali
+      - name: Install smali + tools
         run: |
           sudo apt update
           sudo apt install -y zipalign apksigner aapt
-          wget https://github.com/JesusFreke/smali/releases/download/2.5.2/smali-2.5.2.jar -O smali.jar
+          wget https://github.com/baksmali/smali/releases/download/v3.0.9/smali-3.0.9.jar -O smali.jar
+
       - name: Build classes.dex from smali
         run: |
           mkdir all_smali
