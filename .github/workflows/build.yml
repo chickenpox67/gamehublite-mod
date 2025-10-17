@@ -1,0 +1,45 @@
+name: Build Lite Resources APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Install apktool & build tools
+        run: |
+          sudo apt update
+          sudo apt install -y wget zipalign apksigner
+          wget https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar -O apktool.jar
+
+      - name: Build 64bit APK
+        run: |
+          java -jar apktool.jar b lite_resources -o lite_64.apk --use-aapt2 || java -jar apktool.jar b lite_resources -o lite_64.apk
+          zipalign -p 4 lite_64.apk lite_64_aligned.apk
+          apksigner sign --ks-key-alias key --ks-pass pass:123456 --key-pass pass:123456 --ks mykey.keystore lite_64_aligned.apk || echo "unsigned build done"
+
+      - name: Build 32bit APK (copy same folder for compatibility)
+        run: |
+          cp -r lite_resources lite_resources_32
+          java -jar apktool.jar b lite_resources_32 -o lite_32.apk --use-aapt2 || java -jar apktool.jar b lite_resources_32 -o lite_32.apk
+          zipalign -p 4 lite_32.apk lite_32_aligned.apk
+          apksigner sign --ks-key-alias key --ks-pass pass:123456 --key-pass pass:123456 --ks mykey.keystore lite_32_aligned.apk || echo "unsigned build done"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: built-apks
+          path: |
+            lite_32_aligned.apk
+            lite_64_aligned.apk
